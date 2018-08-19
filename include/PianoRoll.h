@@ -38,6 +38,8 @@
 #include "lmms_basics.h"
 #include "Song.h"
 #include "ToolTip.h"
+#include "StepRecorder.h"
+#include "StepRecorderWidget.h"
 
 class QPainter;
 class QPixmap;
@@ -96,6 +98,11 @@ public:
 	inline bool isRecording() const
 	{
 		return m_recording;
+	}
+
+	inline bool isStepRecording() const
+	{
+		return m_stepRecorder.isRecording();
 	}
 
 	const Pattern* currentPattern() const
@@ -175,6 +182,7 @@ protected slots:
 	void play();
 	void record();
 	void recordAccompany();
+	bool toggleStepRecording();
 	void stop();
 
 	void startRecordNote( const Note & n );
@@ -195,6 +203,7 @@ protected slots:
 
 	void zoomingChanged();
 	void quantizeChanged();
+	void noteLengthChanged();
 	void quantizeNotes();
 
 	void updateSemiToneMarkerMenu();
@@ -261,7 +270,7 @@ private:
 	void autoScroll(const MidiTime & t );
 
 	MidiTime newNoteLen() const;
-
+	
 	void shiftPos(int amount);
 	void shiftSemiTone(int amount);
 	bool isSelection() const;
@@ -315,7 +324,7 @@ private:
 	MidiTime m_currentPosition;
 	bool m_recording;
 	QList<Note> m_recordingNotes;
-
+	
 	Note * m_currentNote;
 	Actions m_action;
 	NoteEditMode m_noteEditMode;
@@ -381,6 +390,9 @@ private:
 
 	friend class PianoRollWindow;
 
+	StepRecorderWidget m_stepRecorderWidget;
+	StepRecorder m_stepRecorder;
+
 	// qproperty fields
 	QColor m_barLineColor;
 	QColor m_beatLineColor;
@@ -420,6 +432,7 @@ public:
 	void stop();
 	void record();
 	void recordAccompany();
+	void toggleStepRecording();
 	void stopRecording();
 
 	bool isRecording() const;
@@ -444,10 +457,13 @@ signals:
 
 
 private slots:
-	void patternRenamed();
+	void updateAfterPatternChange();
 
 private:
+	void patternRenamed();
 	void focusInEvent(QFocusEvent * event);
+	void stopStepRecording();
+	void updateStepRecordingIcon();
 
 	PianoRoll* m_editor;
 
