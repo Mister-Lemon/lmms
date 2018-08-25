@@ -1852,7 +1852,7 @@ void PianoRoll::testPlayNote( Note * n )
 {
 	m_lastKey = n->key();
 
-	if( ! n->isPlaying() && ! m_recording )
+	if( ! n->isPlaying() && ! m_recording && ! m_stepRecorder.isRecording())
 	{
 		n->setIsPlaying( true );
 
