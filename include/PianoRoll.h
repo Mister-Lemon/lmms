@@ -271,7 +271,7 @@ private:
 	void autoScroll(const MidiTime & t );
 
 	MidiTime newNoteLen() const;
-	
+
 	void shiftPos(int amount);
 	void shiftSemiTone(int amount);
 	bool isSelection() const;
@@ -325,7 +325,7 @@ private:
 	MidiTime m_currentPosition;
 	bool m_recording;
 	QList<Note> m_recordingNotes;
-	
+
 	Note * m_currentNote;
 	Actions m_action;
 	NoteEditMode m_noteEditMode;
