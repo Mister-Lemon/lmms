@@ -549,12 +549,12 @@ CarlaInstrumentView::CarlaInstrumentView(CarlaInstrument* const instrument, QWid
 	setPalette( pal );
 
 	QVBoxLayout * l = new QVBoxLayout( this );
-	l->setContentsMargins( 3, 40, 3, 3 );
+	l->setContentsMargins( 3, instrument->kIsPatchbay ? 55:40, 3, 3 );
 	l->setSpacing( 3 );
 	l->setAlignment( Qt::AlignTop );
 
 	// Horizontal layout for the buttons
-	QHBoxLayout * hl = new QHBoxLayout( this );
+	QHBoxLayout * hl = new QHBoxLayout();
 
 	// Show GUI button
 	m_toggleUIButton = new QPushButton( tr( "Show GUI" ), this );
