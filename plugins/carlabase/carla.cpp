@@ -156,8 +156,8 @@ CarlaInstrument::CarlaInstrument(InstrumentTrack* const instrumentTrack, const D
 	resourcesPath = path.absolutePath() + "/share/carla/resources";
 #elif defined(CARLA_OS_MAC)
 	// parse prefix from dll filename
-    QDir path = QFileInfo(dllName).dir();
-    resourcesPath = path.absolutePath() + "/resources";
+	QDir path = QFileInfo(dllName).dir();
+	resourcesPath = path.absolutePath() + "/resources";
 #elif defined(CARLA_OS_WIN32) || defined(CARLA_OS_WIN64)
 	// not yet supported
 #endif

@@ -37,16 +37,16 @@
 // carla/source/includes
 #define REAL_BUILD // FIXME this shouldn't be needed
 #if CARLA_VERSION_HEX >= 0x010911
-    #include "CarlaNativePlugin.h"
+	#include "CarlaNativePlugin.h"
 #else
-    #include "CarlaBackend.h"
-    #include "CarlaNative.h"
-    #include "CarlaUtils.h"
-    CARLA_EXPORT
-    const NativePluginDescriptor* carla_get_native_patchbay_plugin();
+	#include "CarlaBackend.h"
+	#include "CarlaNative.h"
+	#include "CarlaUtils.h"
+	CARLA_EXPORT
+	const NativePluginDescriptor* carla_get_native_patchbay_plugin();
 
-    CARLA_EXPORT
-    const NativePluginDescriptor* carla_get_native_rack_plugin();
+	CARLA_EXPORT
+	const NativePluginDescriptor* carla_get_native_rack_plugin();
 #endif
 
 // lmms/include/
