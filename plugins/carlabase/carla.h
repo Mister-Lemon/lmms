@@ -25,64 +25,64 @@
 #ifndef CARLA_H
 #define CARLA_H
 
-#define CARLA_MAX_KNOBS			32
-#define CARLA_SETTING_PREFIX	"PARAM_KNOB_"
+#define CARLA_MAX_KNOBS            32
+#define CARLA_SETTING_PREFIX    "PARAM_KNOB_"
 
 // qt
-#include <QtCore/QMutex>
-#include <QScrollArea>
-#include <QGridLayout>
-#include <QList>
-#include <QMdiSubWindow>
 #include <QCloseEvent>
 #include <QCompleter>
+#include <QGridLayout>
 #include <QLineEdit>
+#include <QList>
+#include <QScrollArea>
 #include <QStringListModel>
+#include <QtCore/QMutex>
 
 // carla/source/includes
 #define REAL_BUILD // FIXME this shouldn't be needed
 #if CARLA_VERSION_HEX >= 0x010911
-	#include "CarlaNativePlugin.h"
+    #include "CarlaNativePlugin.h"
 #else
-	#include "CarlaBackend.h"
-	#include "CarlaNative.h"
-	#include "CarlaUtils.h"
-	CARLA_EXPORT
-	const NativePluginDescriptor* carla_get_native_patchbay_plugin();
+    #include "CarlaBackend.h"
+    #include "CarlaNative.h"
+    #include "CarlaUtils.h"
+    CARLA_EXPORT
+    const NativePluginDescriptor* carla_get_native_patchbay_plugin();
 
-	CARLA_EXPORT
-	const NativePluginDescriptor* carla_get_native_rack_plugin();
+    CARLA_EXPORT
+    const NativePluginDescriptor* carla_get_native_rack_plugin();
 #endif
 
 // lmms/include/
-#include "plugin_export.h"
+#include "EffectControls.h"
 #include "Instrument.h"
 #include "InstrumentView.h"
-#include "EffectControls.h"
 #include "Knob.h"
+#include "SubWindow.h"
+#include "plugin_export.h"
 
 class QPushButton;
 
-class CarlaParamsQMdiSubWindow : public QMdiSubWindow
+class CarlaParamsSubWindow : public SubWindow
 {
 	Q_OBJECT
 
 signals:
 	void uiClosed();
-	
+    
 public:
-	CarlaParamsQMdiSubWindow( QWidget * _parent, Qt::WindowFlags windowFlags ) :
-		QMdiSubWindow( _parent )
+	CarlaParamsSubWindow(QWidget * _parent, Qt::WindowFlags windowFlags) :
+		SubWindow(_parent)
 	{
-		setAttribute( Qt::WA_DeleteOnClose, false );
-		setWindowFlags( windowFlags );
+		setAttribute(Qt::WA_DeleteOnClose, false);
+		setWindowFlags(windowFlags);
 	}
 
-	virtual ~CarlaParamsQMdiSubWindow()
+	virtual ~CarlaParamsSubWindow()
 	{
 	}
 
-	virtual void closeEvent( QCloseEvent * event )
+	virtual void closeEvent(QCloseEvent * event)
 	{
 		emit uiClosed();
 		hide();
@@ -94,65 +94,65 @@ public:
 
 class PLUGIN_EXPORT CarlaInstrument : public Instrument
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	static const uint32_t kMaxMidiEvents = 512;
+    static const uint32_t kMaxMidiEvents = 512;
 
-	CarlaInstrument(InstrumentTrack* const instrumentTrack, const Descriptor* const descriptor, const bool isPatchbay);
-	virtual ~CarlaInstrument();
+    CarlaInstrument(InstrumentTrack* const instrumentTrack, const Descriptor* const descriptor, const bool isPatchbay);
+    virtual ~CarlaInstrument();
 
-	// Carla NativeHostDescriptor functions
-	uint32_t handleGetBufferSize() const;
-	double handleGetSampleRate() const;
-	bool handleIsOffline() const;
-	const NativeTimeInfo* handleGetTimeInfo() const;
-	void handleUiParameterChanged(const uint32_t index, const float value) const;
-	void handleUiClosed();
-	intptr_t handleDispatcher(const NativeHostDispatcherOpcode opcode, const int32_t index, const intptr_t value, void* const ptr, const float opt);
+    // Carla NativeHostDescriptor functions
+    uint32_t handleGetBufferSize() const;
+    double handleGetSampleRate() const;
+    bool handleIsOffline() const;
+    const NativeTimeInfo* handleGetTimeInfo() const;
+    void handleUiParameterChanged(const uint32_t index, const float value) const;
+    void handleUiClosed();
+    intptr_t handleDispatcher(const NativeHostDispatcherOpcode opcode, const int32_t index, const intptr_t value, void* const ptr, const float opt);
 
-	// LMMS functions
-	virtual Flags flags() const;
-	virtual QString nodeName() const;
-	virtual void saveSettings(QDomDocument& doc, QDomElement& parent);
-	virtual void loadSettings(const QDomElement& elem);
-	virtual void play(sampleFrame* workingBuffer);
-	virtual bool handleMidiEvent(const MidiEvent& event, const MidiTime& time, f_cnt_t offset);
-	virtual PluginView* instantiateView(QWidget* parent);
+    // LMMS functions
+    virtual Flags flags() const;
+    virtual QString nodeName() const;
+    virtual void saveSettings(QDomDocument& doc, QDomElement& parent);
+    virtual void loadSettings(const QDomElement& elem);
+    virtual void play(sampleFrame* workingBuffer);
+    virtual bool handleMidiEvent(const MidiEvent& event, const MidiTime& time, f_cnt_t offset);
+    virtual PluginView* instantiateView(QWidget* parent);
 
 signals:
-	void uiClosed();
+    void uiClosed();
 
 private slots:
-	void sampleRateChanged();
-	void refreshParams(bool valuesOnly, bool init);
-	void clearKnobModels();
-	void knobModelChanged();
+    void sampleRateChanged();
+    void refreshParams(bool valuesOnly, bool init);
+    void clearKnobModels();
+    void knobModelChanged(uint32_t index);
 
 private:
-	const bool kIsPatchbay;
+    const bool kIsPatchbay;
 
-	NativePluginHandle fHandle;
-	NativeHostDescriptor fHost;
-	const NativePluginDescriptor* fDescriptor;
+    NativePluginHandle fHandle;
+    NativeHostDescriptor fHost;
+    const NativePluginDescriptor* fDescriptor;
 
-	uint32_t		fMidiEventCount;
-	NativeMidiEvent	fMidiEvents[kMaxMidiEvents];
-	NativeTimeInfo	fTimeInfo;
+    uint32_t        fMidiEventCount;
+    NativeMidiEvent fMidiEvents[kMaxMidiEvents];
+    NativeTimeInfo  fTimeInfo;
 
-	// this is only needed because note-offs are being sent during play
-	QMutex fMutex;
+    // this is only needed because note-offs are being sent during play
+    QMutex fMutex;
 
-	QList<FloatModel*> floatModels;
-	QDomElement settingsElem;
-	QMdiSubWindow* m_subWindow;
-	QObject* p_subWindow;
+    QList<FloatModel*> floatModels;
+    QDomElement settingsElem;
+    QMdiSubWindow* m_subWindow;
+    QObject* p_subWindow;
 
-	QCompleter* m_paramsCompleter;
-	QStringListModel* m_completerModel;
+    QCompleter* m_paramsCompleter;
+    QStringListModel* m_completerModel;
 
-	friend class CarlaInstrumentView;
-	friend class CarlaParamsView;
+    friend class CarlaInstrumentView;
+    friend class CarlaParamsView;
 };
 
 
@@ -160,31 +160,31 @@ private:
 
 class CarlaInstrumentView : public InstrumentView
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	CarlaInstrumentView(CarlaInstrument* const instrument, QWidget* const parent);
-	virtual ~CarlaInstrumentView();
+    CarlaInstrumentView(CarlaInstrument* const instrument, QWidget* const parent);
+    virtual ~CarlaInstrumentView();
 
 private slots:
-	void toggleUI(bool);
-	void uiClosed();
-	void toggleParamsWindow();
-	void paramsUiClosed();
+    void toggleUI(bool);
+    void uiClosed();
+    void toggleParamsWindow();
+    void paramsUiClosed();
 
 private:
-	virtual void modelChanged();
-	virtual void timerEvent(QTimerEvent*);
+    virtual void modelChanged();
+    virtual void timerEvent(QTimerEvent*);
 
-	NativePluginHandle fHandle;
-	const NativePluginDescriptor* fDescriptor;
-	int fTimerId;
+    NativePluginHandle fHandle;
+    const NativePluginDescriptor* fDescriptor;
+    int fTimerId;
 
-	CarlaInstrument* const m_carlaInstrument;
-	QWidget* const p_parent;
+    CarlaInstrument* const m_carlaInstrument;
+    QWidget* const p_parent;
 
-	QPushButton* m_toggleUIButton;
-	QPushButton* m_toggleParamsWindowButton;
+    QPushButton* m_toggleUIButton;
+    QPushButton* m_toggleParamsWindowButton;
 };
 
 // -------------------------------------------------------------------
@@ -202,7 +202,7 @@ signals:
 private slots:
 	void onRefreshButton();
 	void onRefreshValuesButton();
-	void refreshButtons();
+	void refreshKnobs();
 	void filterKnobs();
 	void clearFilterText();
 
