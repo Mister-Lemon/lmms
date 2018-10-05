@@ -86,7 +86,6 @@ SET(LMMS_SRCS
 	gui/widgets/ToolTip.cpp
 	gui/widgets/TrackLabelButton.cpp
 	gui/widgets/TrackRenameLineEdit.cpp
-	gui/widgets/VectorGraph.cpp
 	gui/widgets/VisualizationWidget.cpp
 	gui/widgets/StepRecorderWidget.cpp 
 	
