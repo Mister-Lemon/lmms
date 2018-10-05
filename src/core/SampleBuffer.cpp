@@ -970,27 +970,28 @@ void SampleBuffer::visualize( QPainter & _p, const QRect & _dr,
 
 
 
-QString SampleBuffer::selectAudioFile(const QString& _file)
+QString SampleBuffer::openAudioFile() const
 {
 	FileDialog ofd( NULL, tr( "Open audio file" ) );
 
 	QString dir;
-        QString file;
-	if( !_file.isNull() && _file!="" )
+	if( !m_audioFile.isEmpty() )
 	{
-		if(QFileInfo(_file).isRelative())
+		QString f = m_audioFile;
+		if( QFileInfo( f ).isRelative() )
 		{
-			QString g=ConfigManager::inst()->userSamplesDir()+_file;
-			if(QFileInfo(g).exists())
-                                file=g;
-                        else
-				file=ConfigManager::inst()->factorySamplesDir()+_file;
+			f = ConfigManager::inst()->userSamplesDir() + f;
+			if( QFileInfo( f ).exists() == false )
+			{
+				f = ConfigManager::inst()->factorySamplesDir() +
+								m_audioFile;
+			}
 		}
-		dir=QFileInfo(file).absolutePath();
+		dir = QFileInfo( f ).absolutePath();
 	}
 	else
 	{
-		dir=ConfigManager::inst()->userSamplesDir();
+		dir = ConfigManager::inst()->userSamplesDir();
 	}
 	// change dir to position of previously opened file
 	ofd.setDirectory( dir );
@@ -998,14 +999,14 @@ QString SampleBuffer::selectAudioFile(const QString& _file)
 
 	// set filters
 	QStringList types;
-	types << tr( "All Audio-Files (*.wav *.ogg *.ds *.flac *.mp3 *.spx *.voc "
-                     "*.aif *.aiff *.au *.raw)" )
+	types << tr( "All Audio-Files (*.wav *.ogg *.ds *.flac *.spx *.voc "
+					"*.aif *.aiff *.au *.raw)" )
 		<< tr( "Wave-Files (*.wav)" )
 		<< tr( "OGG-Files (*.ogg)" )
 		<< tr( "DrumSynth-Files (*.ds)" )
 		<< tr( "FLAC-Files (*.flac)" )
 		<< tr( "SPEEX-Files (*.spx)" )
-		<< tr( "MP3-Files (*.mp3)" )
+		//<< tr( "MP3-Files (*.mp3)" )
 		//<< tr( "MIDI-Files (*.mid)" )
 		<< tr( "VOC-Files (*.voc)" )
 		<< tr( "AIFF-Files (*.aif *.aiff)" )
@@ -1013,14 +1014,14 @@ QString SampleBuffer::selectAudioFile(const QString& _file)
 		<< tr( "RAW-Files (*.raw)" )
 		//<< tr( "MOD-Files (*.mod)" )
 		;
-	ofd.setNameFilters(types);
-	if(!file.isEmpty())
+	ofd.setNameFilters( types );
+	if( !m_audioFile.isEmpty() )
 	{
 		// select previously opened file
-		ofd.selectFile(file);// QFileInfo( m_audioFile ).fileName() );
+		ofd.selectFile( QFileInfo( m_audioFile ).fileName() );
 	}
 
-	if( ofd.exec()==QDialog::Accepted )
+	if( ofd.exec () == QDialog::Accepted )
 	{
 		if( ofd.selectedFiles().isEmpty() )
 		{
@@ -1031,13 +1032,6 @@ QString SampleBuffer::selectAudioFile(const QString& _file)
 
 	return QString();
 }
-
-
-QString SampleBuffer::openAudioFile() const
-{
-	return selectAudioFile(m_audioFile);
-}
-
 
 
 
