@@ -65,6 +65,7 @@ IF("${PLUGIN_LIST}" STREQUAL "")
 		OpulenZ
 		organic
 		FreeBoy
+		PadsGDX	
 		patman
 		peak_controller_effect
 		GigPlayer
