@@ -36,6 +36,7 @@
 #include "lmms_basics.h"
 #include "lmms_math.h"
 #include "shared_object.h"
+#include "OscillatorConstants.h"
 #include "MemoryManager.h"
 
 
@@ -253,6 +254,9 @@ public:
 
 	static QString tryToMakeRelative( const QString & _file );
 	static QString tryToMakeAbsolute(const QString & file);
+
+
+	sample_t **m_userAntiAliasWaveTable;
 
 
 public slots:

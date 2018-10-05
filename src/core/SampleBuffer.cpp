@@ -23,6 +23,7 @@
  */
 
 #include "SampleBuffer.h"
+#include "Oscillator.h"
 
 
 #include <QBuffer>
@@ -61,6 +62,7 @@
 
 
 SampleBuffer::SampleBuffer() :
+	m_userAntiAliasWaveTable( NULL ),
 	m_audioFile( "" ),
 	m_origData( NULL ),
 	m_origFrames( 0 ),
@@ -134,6 +136,16 @@ SampleBuffer::~SampleBuffer()
 {
 	MM_FREE( m_origData );
 	MM_FREE( m_data );
+	if(m_userAntiAliasWaveTable)
+	{
+		for(int i = 0 ; i < OscillatorConstants::WAVE_TABLES_PER_WAVEFORM_COUNT; ++i)
+		{
+			delete m_userAntiAliasWaveTable[i];
+			m_userAntiAliasWaveTable[i] = NULL;
+		}
+		delete m_userAntiAliasWaveTable;
+		m_userAntiAliasWaveTable = NULL;
+	}
 }
 
 
@@ -270,6 +282,7 @@ void SampleBuffer::update( bool _keep_settings )
 	}
 
 	emit sampleUpdated();
+	Oscillator::generateAntiAliasUserWaveTable(this);
 
 	if( fileLoadError )
 	{
