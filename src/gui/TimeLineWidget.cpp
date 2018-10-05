@@ -292,7 +292,8 @@ void TimeLineWidget::mousePressEvent( QMouseEvent* event )
 	{
 		return;
 	}
-	if( event->button() == Qt::LeftButton  && !(event->modifiers() & Qt::ShiftModifier) )
+
+	if( event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ShiftModifier) )
 	{
 		m_action = MovePositionMarker;
 		if( event->x() - m_xOffset < s_posMarkerPixmap->width() )
@@ -309,40 +310,36 @@ void TimeLineWidget::mousePressEvent( QMouseEvent* event )
 		m_action = SelectSongTCO;
 		m_initalXSelect = event->x();
 	}
-	else if( event->button() == Qt::RightButton || event->button() == Qt::MiddleButton )
+	else if( event->button() == Qt::RightButton )
 	{
-        	m_moveXOff = s_posMarkerPixmap->width() / 2;
-		const MidiTime t = m_begin + static_cast<int>( event->x() * MidiTime::ticksPerTact() / m_ppt );
+		m_moveXOff = s_posMarkerPixmap->width() / 2;
+		const MidiTime tick = m_begin + static_cast<int>( qMax( event->x() - m_xOffset - m_moveXOff, 0 ) * MidiTime::ticksPerTact() / m_ppt );
+		const MidiTime loopMid = ( m_loopPos[0] + m_loopPos[1] ) / 2;
+
+		if( tick < loopMid )
+		{
+			m_action = MoveLoopBegin;
+		}
+		else if( tick > loopMid )
+		{
+			m_action = MoveLoopEnd;
+		}
+
 		if( m_loopPos[0] > m_loopPos[1]  )
 		{
 			qSwap( m_loopPos[0], m_loopPos[1] );
 		}
-		if( ( event->modifiers() & Qt::ShiftModifier ) || event->button() == Qt::MiddleButton )
-		{
-			m_action = MoveLoopBegin;
-		}
-		else
-		{
-			m_action = MoveLoopEnd;
-		}
-		m_loopPos[( m_action == MoveLoopBegin ) ? 0 : 1] = t;
+
+		m_loopPos[( m_action == MoveLoopBegin ) ? 0 : 1] = tick;
 	}
 
-	if( m_action == MoveLoopBegin )
+	if( m_action == MoveLoopBegin || m_action == MoveLoopEnd )
 	{
 		delete m_hint;
 		m_hint = TextFloat::displayMessage( tr( "Hint" ),
 					tr( "Press <%1> to disable magnetic loop points." ).arg(UI_CTRL_KEY),
 					embed::getIconPixmap( "hint" ), 0 );
 	}
-	else if( m_action == MoveLoopEnd )
-	{
-		delete m_hint;
-		m_hint = TextFloat::displayMessage( tr( "Hint" ),
-					tr( "Hold <Shift> to move the begin loop point; Press <%1> to disable magnetic loop points." ).arg(UI_CTRL_KEY),
-					embed::getIconPixmap( "hint" ), 0 );
-	}
-
 	mouseMoveEvent( event );
 }
 
@@ -351,17 +348,17 @@ void TimeLineWidget::mousePressEvent( QMouseEvent* event )
 
 void TimeLineWidget::mouseMoveEvent( QMouseEvent* event )
 {
-	const MidiTime t = m_begin + static_cast<int>( qMax( event->x() - m_xOffset - m_moveXOff, 0 ) * MidiTime::ticksPerTact() / m_ppt );
+	const MidiTime tick = m_begin + static_cast<int>( qMax( event->x() - m_xOffset - m_moveXOff, 0 ) * MidiTime::ticksPerTact() / m_ppt );
 
 	switch( m_action )
 	{
 		case MovePositionMarker:
-			m_pos.setTicks(t.getTicks());
-			Engine::getSong()->setToTime(t, m_mode);
+			m_pos.setTicks(tick.getTicks());
+			Engine::getSong()->setToTime(tick, m_mode);
 			if (!( Engine::getSong()->isPlaying()))
 			{
 				//Song::Mode_None is used when nothing is being played.
-				Engine::getSong()->setToTime(t, Song::Mode_None);
+				Engine::getSong()->setToTime(tick, Song::Mode_None);
 			}
 			m_pos.setCurrentFrame( 0 );
 			m_pos.setJumped( true );
@@ -372,17 +369,17 @@ void TimeLineWidget::mouseMoveEvent( QMouseEvent* event )
 		case MoveLoopBegin:
 		case MoveLoopEnd:
 		{
-			const int i = m_action - MoveLoopBegin;
+			const int i = m_action - MoveLoopBegin; // i == 0 || i == 1
 			if( event->modifiers() & Qt::ControlModifier )
 			{
 				// no ctrl-press-hint when having ctrl pressed
 				delete m_hint;
 				m_hint = NULL;
-				m_loopPos[i] = t;
+				m_loopPos[i] = tick;
 			}
 			else
 			{
-				m_loopPos[i] = t.toNearestTact();
+				m_loopPos[i] = tick.toNearestTact();
 			}
 			// Catch begin == end
 			if( m_loopPos[0] == m_loopPos[1] )
