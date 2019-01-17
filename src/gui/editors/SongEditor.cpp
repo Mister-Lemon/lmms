@@ -654,7 +654,7 @@ ComboBoxModel *SongEditor::zoomingModel() const
 
 
 SongEditorWindow::SongEditorWindow(Song* song) :
-	Editor(Engine::mixer()->audioDev()->supportsCapture(), false),
+	Editor(Engine::mixer()->audioDev()->supportsCapture()),
 	m_editor(new SongEditor(song)),
 	m_crtlAction( NULL )
 {
