@@ -637,6 +637,18 @@ void PatternView::openInPianoRoll()
 
 
 
+
+void PatternView::setGhostInPianoRoll()
+{
+	gui->pianoRoll()->setGhostPattern( m_pat );
+	gui->pianoRoll()->parentWidget()->show();
+	gui->pianoRoll()->show();
+	gui->pianoRoll()->setFocus();
+}
+
+
+
+
 void PatternView::resetName()
 {
 	m_pat->setName( m_pat->m_instrumentTrack->name() );
@@ -663,7 +675,22 @@ void PatternView::constructContextMenu( QMenu * _cm )
 	_cm->insertAction( _cm->actions()[0], a );
 	connect( a, SIGNAL( triggered( bool ) ),
 					this, SLOT( openInPianoRoll() ) );
-	_cm->insertSeparator( _cm->actions()[1] );
+
+	if( gui->pianoRoll()->currentPattern() &&
+			gui->pianoRoll()->currentPattern() != m_pat &&
+			not m_pat->empty() )
+	{
+		QAction * b = new QAction( embed::getIconPixmap( "ghost_note" ),
+						tr( "Set as ghost in piano-roll" ), _cm );
+		_cm->insertAction( _cm->actions()[1], b );
+		connect( b, SIGNAL( triggered( bool ) ),
+						this, SLOT( setGhostInPianoRoll() ) );
+		_cm->insertSeparator( _cm->actions()[2] );
+	}
+	else
+	{
+		_cm->insertSeparator( _cm->actions()[1] );
+	}
 
 	_cm->addSeparator();
 
@@ -697,8 +724,7 @@ void PatternView::mousePressEvent( QMouseEvent * _me )
 {
 	if( _me->button() == Qt::LeftButton &&
 				m_pat->m_patternType == Pattern::BeatPattern &&
-				( fixedTCOs() || pixelsPerTact() >= 96 ||
-				m_pat->m_steps != MidiTime::stepsPerTact() ) &&
+				( fixedTCOs() || pixelsPerTact() >= 96 ) &&
 				_me->y() > height() - s_stepBtnOff->height() )
 
 	// when mouse button is pressed in beat/bassline -mode
@@ -768,8 +794,7 @@ void PatternView::mouseDoubleClickEvent(QMouseEvent *_me)
 void PatternView::wheelEvent( QWheelEvent * _we )
 {
 	if( m_pat->m_patternType == Pattern::BeatPattern &&
-				( fixedTCOs() || pixelsPerTact() >= 96 ||
-				m_pat->m_steps != MidiTime::stepsPerTact() ) &&
+				( fixedTCOs() || pixelsPerTact() >= 96 ) &&
 				_we->y() > height() - s_stepBtnOff->height() )
 	{
 //	get the step number that was wheeled on and
@@ -1013,8 +1038,7 @@ void PatternView::paintEvent( QPaintEvent * )
 	}
 
 	// beat pattern paint event
-	else if( beatPattern &&	( fixedTCOs() || pixelsPerTact >= 96
-			|| m_pat->m_steps != MidiTime::stepsPerTact() ) )
+	else if( beatPattern &&	( fixedTCOs() || pixelsPerTact >= 96 ) )
 	{
 		QPixmap stepon0;
 		QPixmap stepon200;
